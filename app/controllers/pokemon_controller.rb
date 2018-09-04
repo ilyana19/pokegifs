@@ -1,16 +1,21 @@
 class PokemonController < ApplicationController
   def show
+    @id = pokemon_response["id"]
+    @name =  pokemon_response["name"]
+    @types = types(pokemon_response)
+    @gif_url = random_gif(pokemon_gif_response)
+
+    render json: {id: @id, name: @name, types: @types, gif: @gif_url}
+  end
+
+  def pokemon_response
     response = HTTParty.get("https://pokeapi.co/api/v2/pokemon/#{params[:id]}")
-    body = JSON.parse(response.body)
-    id = body["id"]
-    name =  body["name"]
-    types = types(body)
+    return JSON.parse(response.body)
+  end
 
-    gif_response = HTTParty.get("https://api.giphy.com/v1/gifs/search?api_key=#{ENV["GIPHY_KEY"]}&q=#{name}&rating=g")
-    gif_body = JSON.parse(gif_response.body)
-    gif_url = random_gif(gif_body)
-
-    render json: {id: id, name: name, types: types, gif: gif_url}
+  def pokemon_gif_response
+    gif_response = HTTParty.get("https://api.giphy.com/v1/gifs/search?api_key=#{ENV["GIPHY_KEY"]}&q=#{@name}&rating=g")
+    return JSON.parse(gif_response.body)
   end
 
   def types(body)
